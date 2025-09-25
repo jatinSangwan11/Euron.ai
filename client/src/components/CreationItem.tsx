@@ -1,5 +1,6 @@
 import { useState } from "react"
 import type { creationData } from "../pages/Dashboard"
+import Markdown from "react-markdown";
 
 const CreationItem = ({item} : {item: creationData}) => {
     const [expanded, setExpanded] = useState(false);
@@ -28,8 +29,10 @@ const CreationItem = ({item} : {item: creationData}) => {
                         </div>
                     ): (
                         <div className="mt-3 h-full overflow-y-scroll text-sm text-slate-700">
-                            <div>
-                                {item.content}
+                            <div className="reset-tw ">
+                                <Markdown>
+                                    {item.content}
+                                </Markdown>
                             </div>
                         </div>
                     )} 
