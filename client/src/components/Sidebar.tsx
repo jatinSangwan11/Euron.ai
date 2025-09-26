@@ -44,7 +44,7 @@ const navItems = [
         Icon: FileText
     },
     {
-        to: '/ai/commuinty',
+        to: '/ai/community',
         label: 'Community',
         Icon: Users
     }
