@@ -29,6 +29,8 @@ app.use('/api/user', userRouter)
 
 const PORT = process.env.PORT || 3000;
 
-app.listen(PORT, () => {
-    console.log(`${PORT} is active and listening`)
-})
+// app.listen(PORT, () => {
+//     console.log(`${PORT} is active and listening`)
+// })
+
+export default app;
