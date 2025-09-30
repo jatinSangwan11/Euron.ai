@@ -28,5 +28,5 @@
     "moduleDetection": "force",
     "skipLibCheck": true
   },
-  "include": ["src", "types"]
+  "include": ["./src", "./types"]
 }
