@@ -7,6 +7,10 @@
     "target": "ES2022",
     "moduleResolution": "NodeNext",
 
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "verbatimModuleSyntax": false,
+
     "types": ["node"],
     "sourceMap": true,
     "declaration": true,
@@ -19,10 +23,10 @@
 
     "strict": true,
     "jsx": "react-jsx",
-    "verbatimModuleSyntax": true,
     "isolatedModules": true,
     "noUncheckedSideEffectImports": true,
     "moduleDetection": "force",
     "skipLibCheck": true
-  }
+  },
+  "include": ["src", "types"]
 }
