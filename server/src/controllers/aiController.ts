@@ -1,5 +1,5 @@
 import type { Request, Response } from "express";
-import OpenAI from "openai";
+import { OpenAI } from "openai";
 import sql from "../configs/db.ts";
 import { clerkClient } from "@clerk/express";
 import axios from "axios";
@@ -11,7 +11,6 @@ const AI = new OpenAI({
   apiKey: process.env.GEMINI_API_KEY!,
   baseURL: "https://generativelanguage.googleapis.com/v1beta/openai/",
 });
-
 
 interface ResponseType {
   success: boolean;
@@ -300,7 +299,10 @@ export const resumeReview = async (
   try {
     // @ts-ignore
     const { userId } = req.auth ? await req.auth() : {};
-    const resume = req.file;
+    const resume = req.file as Express.Multer.File | undefined;
+    if (!resume) {
+      return res.json({ success: false, message: "upload the resume first" });
+    }
     // @ts-ignore
     const plan = req.plan as "Premium" | "Free";
     if (plan !== "Premium") {
