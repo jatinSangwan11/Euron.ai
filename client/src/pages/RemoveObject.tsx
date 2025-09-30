@@ -1,14 +1,52 @@
 import { Scissors, Sparkles } from "lucide-react";
 import React, { useState } from "react";
+import axios from "axios";
+import { useAuth } from "@clerk/clerk-react";
+import toast from "react-hot-toast";
+
+axios.defaults.baseURL = import.meta.env.VITE_BASE_URL;
 
 const RemoveObject = () => {
-  const [input, setInput] = useState<File| null>(null);
-  const [object, setObject] = useState<string>('');
+  const [input, setInput] = useState<File | null>(null);
+  const [object, setObject] = useState<string>("");
+  const [loading, setLoading] = useState<boolean>(false);
+  const [content, setContent] = useState<string>("");
+  const { getToken } = useAuth();
 
   const onSubmitHandler = async (
     e: React.FormEvent<HTMLFormElement>
   ): Promise<void> => {
     e.preventDefault();
+    try {
+      setLoading(true);
+      if (object.split(" ").length > 1) {
+        toast("Please enter only one object name");
+        return;
+      }
+      const formData = new FormData();
+      if (input && object) {
+        formData.append("image", input);
+        formData.append("object", object);
+      }
+      const { data } = await axios.post(
+        "/api/ai/remove-image-object",
+        formData, // <-- send FormData directly, not as an object
+        {
+          headers: {
+            Authorization: `Bearer ${await getToken()}`,
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
+      if (data.success) {
+        setContent(data.content);
+      } else {
+        toast.error(data.message);
+      }
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Error!!!");
+    }
+    setLoading(false);
   };
 
   return (
@@ -30,14 +68,16 @@ const RemoveObject = () => {
         <p className="mt-6 text-sm font-medium">Upload Image</p>
         <input
           type="file"
-          onChange={(e) => setInput(e.target.files? e.target.files[0]: null)}
+          onChange={(e) => setInput(e.target.files ? e.target.files[0] : null)}
           accept="image/*"
           className="w-full p-2 px-3 mt-2 outline-none text-sm
           rounded-md border border-gray-300 text-gray-600"
           required
         />
 
-         <p className="mt-6 text-sm font-medium">Describe Object name to remove</p>
+        <p className="mt-6 text-sm font-medium">
+          Describe Object name to remove
+        </p>
         <textarea
           rows={6}
           onChange={(e) => setObject(e.target.value)}
@@ -49,11 +89,19 @@ const RemoveObject = () => {
         />
 
         <button
+          disabled={loading}
           className="w-full flex justify-center items-center gap-2 bg-gradient-to-r
           from-[#417DF6] to-[#8E37EB] text-white px-4 py-2 mt-6 text-sm
           rounded-lg cursor-pointer"
         >
-          <Scissors className="w-5" />
+          {loading ? (
+            <span
+              className="w-4 h-4 my-1 rounded-full border-2 border-t-transparent
+            animate-spin"
+            ></span>
+          ) : (
+            <Scissors className="w-5" />
+          )}
           Remove Object
         </button>
       </form>
@@ -66,13 +114,16 @@ const RemoveObject = () => {
           <Scissors className="w-5 h-5 text-[#4A7AFF]" />
           <h1 className="text-xl font-semibold">Processed Image</h1>
         </div>
-
-        <div className="flex-1 flex justify-center items-center">
-          <div className="text-sm flex flex-col items-center gap-5 text-gray-400">
-            <Scissors className="w-9 h-9" />
-            <p>Upload an image and click "Remove Object" to get started</p>
+        {!content ? (
+          <div className="flex-1 flex justify-center items-center">
+            <div className="text-sm flex flex-col items-center gap-5 text-gray-400">
+              <Scissors className="w-9 h-9" />
+              <p>Upload an image and click "Remove Object" to get started</p>
+            </div>
           </div>
-        </div>
+        ) : (
+          <img src={content} alt="image" className="w-full h-full mt-3" />
+        )}
       </div>
     </div>
   );

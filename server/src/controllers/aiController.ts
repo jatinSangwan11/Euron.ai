@@ -192,7 +192,8 @@ export const removeImageBackground = async (
   try {
     // @ts-ignore
     const { userId } = req.auth ? await req.auth() : {};
-    const {image} = req.file;
+    const image = req.file;
+    // console.log(image?.path)
     // @ts-ignore
     const plan = req.plan as "Premium" | "Free";
     if (plan !== "Premium") {
@@ -211,12 +212,11 @@ export const removeImageBackground = async (
         }
     ]
    })
-
     await sql`INSERT INTO creations (user_id, prompt, content, type)
-              VALUES (${userId}, 'Remove background from image', ${secure_url}, 'image',)`;
+      VALUES (${userId}, 'Remove background from image', ${secure_url}, 'image')`;
 
     // console.log('req:::', req)
-    return res.json({ success: true, secure_url });
+    return res.json({ success: true, content:secure_url });
   } catch (error) {
     console.log(error instanceof Error ? error.message : error);
     return res.json({
@@ -234,7 +234,7 @@ export const removeImageObject = async (
     // @ts-ignore
     const { userId } = req.auth ? await req.auth() : {};
     const {object} = req.body;
-    const {image} = req.file;
+    const image = req.file;
     // @ts-ignore
     const plan = req.plan as "Premium" | "Free";
     if (plan !== "Premium") {
@@ -243,7 +243,12 @@ export const removeImageObject = async (
         message: "This feature is only available for premium subscriptions",
       });
     }
-
+    if(!image){
+      return res.json({
+        success: false,
+        message: "upload the image first"
+      })
+    }
     // we will store this image on cloudinary
    const {public_id} = await cloudinary.uploader.upload(image.path)
 
@@ -255,7 +260,7 @@ export const removeImageObject = async (
    })
 
     await sql`INSERT INTO creations (user_id, prompt, content, type)
-              VALUES (${userId}, ${`Removed ${object} from image`}, ${image_url}, 'image',)`;
+              VALUES (${userId}, ${`Removed ${object} from image`}, ${image_url}, 'image')`;
 
     // console.log('req:::', req)
     return res.json({ success: true, content: image_url });
@@ -285,7 +290,7 @@ export const resumeReview = async (
       });
     }
     // @ts-ignore
-    if(resume?.size()> 5*1024*1024){
+    if(resume?.size > 5*1024*1024){
         return res.json({success:false, message: "Upload file less than 5MB"})
     }
     // @ts-ignore
@@ -293,19 +298,19 @@ export const resumeReview = async (
     const pdfData = await pdf(dataBuffer)
 
     const prompt = `Review the following resume and provide constructive feedback on its
-    strengths, weakness, and areas for improvement. Resume content:\n\n${pdfData.text}`
+    strengths, weakness, and areas for improvement. Resume content:\n\n${pdfData.text} in less than 700 words`
 
      const response = await AI.chat.completions.create({
       model: "gemini-2.0-flash",
       messages: [{ role: "user", content: prompt }],
       temperature: 0.7,
-      max_tokens: 1000,
+      max_tokens: 700,
     });
 
     const content = response.choices[0]?.message.content ?? "";
 
     await sql`INSERT INTO creations (user_id, prompt, content, type)
-              VALUES (${userId}, 'Review the uploaded resume', ${content}}, 'resume-review',)`;
+              VALUES (${userId}, 'Review the uploaded resume', ${content}, 'resume-review')`;
 
     // console.log('req:::', req)
     return res.json({ success: true, content });

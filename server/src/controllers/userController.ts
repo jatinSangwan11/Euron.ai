@@ -9,7 +9,7 @@ export const getUserCreations = async (req: Request, res: Response) => {
 
         const creations = await sql`SELECT * FROM creations WHERE user_id = ${userId} ORDER BY created_at DESC`;
         res.json({
-            sucess: true,
+            success: true,
             creations
         })
 
@@ -26,7 +26,7 @@ export const getPublishedCreations = async (req: Request, res: Response) => {
 
         const creations = await sql`SELECT * FROM creations WHERE publish = true ORDER BY created_at DESC`;
         res.json({
-            sucess: true,
+            success: true,
             creations
         })
 
@@ -70,7 +70,7 @@ export const toogleLikeCreation = async (req: Request, res: Response) => {
         // postgres array literal syntax
         const formattedArray = `{${updatedLikes.join(',')}}`;
         
-        await sql`UPDATE creations SET like = ${formattedArray}::text[] where id = ${id}`;
+        await sql`UPDATE creations SET likes = ${formattedArray}::text[] where id = ${id}`;
         
         res.json({
             success: true,
