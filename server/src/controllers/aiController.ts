@@ -32,7 +32,12 @@ export const generateArticle = async (
     const plan = req.plan as "Premium" | "Free";
     // @ts-ignore
     const free_usage = (req.free_usage as number) ?? 0;
-
+    if(!userId){
+      return res.json({
+        success: false,
+        message: "user id not present"
+      })
+    }
     if (plan !== "Premium" && free_usage >= 10) {
       return res.json({
         success: false,
@@ -101,7 +106,12 @@ export const generateBlogTitle = async (
     const plan = req.plan as "Premium" | "Free";
     // @ts-ignore
     const free_usage = (req.free_usage as number) ?? 0;
-
+    if(!userId){
+      return res.json({
+        success: false,
+        message: "user id not present"
+      })
+    }
     if (plan !== "Premium" && free_usage >= 10) {
       return res.json({
         success: false,
