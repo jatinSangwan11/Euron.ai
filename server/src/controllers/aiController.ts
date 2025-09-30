@@ -1,7 +1,11 @@
 import type { Request, Response } from "express";
 import OpenAI from "openai";
-import sql from "../configs/db.js";
+import sql from "../configs/db.ts";
 import { clerkClient } from "@clerk/express";
+import axios from "axios";
+import {v2 as cloudinary} from 'cloudinary'
+import fs from 'fs'
+import pdf from 'pdf-parse'
 
 const AI = new OpenAI({
   apiKey: process.env.GEMINI_API_KEY,
@@ -13,6 +17,7 @@ interface ResponseType {
   content?: string;
   message?: string;
   error?: string;
+  secure_url?: string;
 }
 
 export const generateArticle = async (
@@ -43,6 +48,7 @@ export const generateArticle = async (
     });
 
     const content = response.choices[0]?.message.content ?? "";
+    console.log('content:::', content)
 
     await sql`INSERT INTO creations (user_id, prompt, content, type)
               VALUES (${userId}, ${prompt}, ${content}, 'article')`;
@@ -53,9 +59,10 @@ export const generateArticle = async (
       });
     }
     // console.log('req:::', req)
+    console.log('content:::', content)
     return res.json({ success: true, content });
   } catch (error) {
-    console.log(error instanceof Error? error.message: error)
+    console.log(error instanceof Error ? error.message : error);
     return res.json({
       success: false,
       error: error instanceof Error ? error.message : String(error),
@@ -63,8 +70,7 @@ export const generateArticle = async (
   }
 };
 
-
-// NOTE:: here we don;t give a fuck about return cause express only cares about what we send to 
+// NOTE:: here we don;t give a fuck about return cause express only cares about what we send to
 // the http response so res.json({..}) this returns an express Response object
 
 // Response {
@@ -90,7 +96,7 @@ export const generateBlogTitle = async (
   try {
     // @ts-ignore
     const { userId } = req.auth ? await req.auth() : {};
-    const { prompt, length } = req.body;
+    const { prompt } = req.body;
     // @ts-ignore
     const plan = req.plan as "Premium" | "Free";
     // @ts-ignore
@@ -107,13 +113,13 @@ export const generateBlogTitle = async (
       model: "gemini-2.0-flash",
       messages: [{ role: "user", content: prompt }],
       temperature: 0.7,
-      max_tokens: Number(length),
+      max_tokens: 200,
     });
 
     const content = response.choices[0]?.message.content ?? "";
 
     await sql`INSERT INTO creations (user_id, prompt, content, type)
-              VALUES (${userId}, ${prompt}, ${content}, 'article')`;
+              VALUES (${userId}, ${prompt}, ${content}, 'blog-title')`;
 
     if (plan === "Free") {
       await clerkClient.users.updateUserMetadata(userId, {
@@ -123,10 +129,192 @@ export const generateBlogTitle = async (
     // console.log('req:::', req)
     return res.json({ success: true, content });
   } catch (error) {
-    console.log(error instanceof Error? error.message: error)
+    console.log(error instanceof Error ? error.message : error);
     return res.json({
       success: false,
       error: error instanceof Error ? error.message : String(error),
     });
   }
 };
+
+export const generateImage = async (
+  req: Request,
+  res: Response<Partial<ResponseType>>
+): Promise<Response> => {
+  try {
+    // @ts-ignore
+    const { userId } = req.auth ? await req.auth() : {};
+    const { prompt, publish } = req.body;
+    // @ts-ignore
+    const plan = req.plan;
+
+    // TODO:: here even after having the premium plan, plan is still free in dev not able to test with premuim
+    console.log("Plan:::", plan)
+    if (plan !== "Premium") {
+      return res.json({
+        success: false,
+        message: "This feature is only available for premium subscriptions",
+      });
+    }
+    const formData = new FormData();
+    formData.append("prompt", `${prompt}`);
+
+    const {data} = await axios.post("https://clipdrop-api.co/text-to-image/v1", formData, {
+      headers: {
+        "x-api-key": process.env.CLIPDROP_API_KEY,
+      },
+      responseType: "arraybuffer"
+    });
+
+    const base64Image = `data:image/png;base64,${Buffer.from(data,'binary').toString('base64')}`
+
+    // we will store this image on cloudinary
+   const {secure_url} = await cloudinary.uploader.upload(base64Image)
+
+    await sql`INSERT INTO creations (user_id, prompt, content, type, publish)
+              VALUES (${userId}, ${prompt}, ${secure_url}, 'image', ${publish?? false})`;
+
+    // console.log('req:::', req)
+    return res.json({ success: true, content: secure_url });
+  } catch (error) {
+    console.log(error instanceof Error ? error.message : error);
+    return res.json({
+      success: false,
+      error: error instanceof Error ? error.message : String(error),
+    });
+  }
+};
+
+export const removeImageBackground = async (
+  req: Request,
+  res: Response<Partial<ResponseType>>
+): Promise<Response> => {
+  try {
+    // @ts-ignore
+    const { userId } = req.auth ? await req.auth() : {};
+    const {image} = req.file;
+    // @ts-ignore
+    const plan = req.plan as "Premium" | "Free";
+    if (plan !== "Premium") {
+      return res.json({
+        success: false,
+        message: "This feature is only available for premium subscriptions",
+      });
+    }
+
+    // we will store this image on cloudinary
+   const {secure_url} = await cloudinary.uploader.upload(image.path,{
+    transformation: [
+        {
+            effect:'background_removal',
+            background_removal: 'removal_the_background'
+        }
+    ]
+   })
+
+    await sql`INSERT INTO creations (user_id, prompt, content, type)
+              VALUES (${userId}, 'Remove background from image', ${secure_url}, 'image',)`;
+
+    // console.log('req:::', req)
+    return res.json({ success: true, secure_url });
+  } catch (error) {
+    console.log(error instanceof Error ? error.message : error);
+    return res.json({
+      success: false,
+      error: error instanceof Error ? error.message : String(error),
+    });
+  }
+};
+
+export const removeImageObject = async (
+  req: Request,
+  res: Response<Partial<ResponseType>>
+): Promise<Response> => {
+  try {
+    // @ts-ignore
+    const { userId } = req.auth ? await req.auth() : {};
+    const {object} = req.body;
+    const {image} = req.file;
+    // @ts-ignore
+    const plan = req.plan as "Premium" | "Free";
+    if (plan !== "Premium") {
+      return res.json({
+        success: false,
+        message: "This feature is only available for premium subscriptions",
+      });
+    }
+
+    // we will store this image on cloudinary
+   const {public_id} = await cloudinary.uploader.upload(image.path)
+
+   const image_url = cloudinary.url(public_id, {
+    transformation: [{
+        effect: `gen_remove:${object}`
+    }],
+    resource_type: 'image'
+   })
+
+    await sql`INSERT INTO creations (user_id, prompt, content, type)
+              VALUES (${userId}, ${`Removed ${object} from image`}, ${image_url}, 'image',)`;
+
+    // console.log('req:::', req)
+    return res.json({ success: true, content: image_url });
+  } catch (error) {
+    console.log(error instanceof Error ? error.message : error);
+    return res.json({
+      success: false,
+      error: error instanceof Error ? error.message : String(error),
+    });
+  }
+};
+
+export const resumeReview = async (
+  req: Request,
+  res: Response<Partial<ResponseType>>
+): Promise<Response> => {
+  try {
+    // @ts-ignore
+    const { userId } = req.auth ? await req.auth() : {};
+    const resume = req.file;
+    // @ts-ignore
+    const plan = req.plan as "Premium" | "Free";
+    if (plan !== "Premium") {
+      return res.json({
+        success: false,
+        message: "This feature is only available for premium subscriptions",
+      });
+    }
+    // @ts-ignore
+    if(resume?.size()> 5*1024*1024){
+        return res.json({success:false, message: "Upload file less than 5MB"})
+    }
+    // @ts-ignore
+    const dataBuffer = fs.readFileSync(resume.path)
+    const pdfData = await pdf(dataBuffer)
+
+    const prompt = `Review the following resume and provide constructive feedback on its
+    strengths, weakness, and areas for improvement. Resume content:\n\n${pdfData.text}`
+
+     const response = await AI.chat.completions.create({
+      model: "gemini-2.0-flash",
+      messages: [{ role: "user", content: prompt }],
+      temperature: 0.7,
+      max_tokens: 1000,
+    });
+
+    const content = response.choices[0]?.message.content ?? "";
+
+    await sql`INSERT INTO creations (user_id, prompt, content, type)
+              VALUES (${userId}, 'Review the uploaded resume', ${content}}, 'resume-review',)`;
+
+    // console.log('req:::', req)
+    return res.json({ success: true, content });
+  } catch (error) {
+    console.log(error instanceof Error ? error.message : error);
+    return res.json({
+      success: false,
+      error: error instanceof Error ? error.message : String(error),
+    });
+  }
+};
+
