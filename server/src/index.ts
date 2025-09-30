@@ -2,6 +2,8 @@ import express, { request, type Request, type Response } from "express";
 import cors from 'cors';
 import 'dotenv/config';
 import { clerkMiddleware, requireAuth } from '@clerk/express';
+import { auth } from "./middlewares/auth.ts";
+import { generateArticle } from "./controllers/aiController.ts";
 import aiRouter from "./routes/aiRoutes.ts";
 import connectCloudinary from "./configs/cloudinary.ts";
 import userRouter from "./routes/userRouter.ts";
@@ -27,8 +29,6 @@ app.use('/api/user', userRouter)
 
 const PORT = process.env.PORT || 3000;
 
-// app.listen(PORT, () => {
-//     console.log(`${PORT} is active and listening`)
-// })
-
-export default app;
+app.listen(PORT, () => {
+    console.log(`${PORT} is active and listening`)
+})
