@@ -203,7 +203,7 @@ export const removeImageBackground = async (
     // @ts-ignore
     const { userId } = req.auth ? await req.auth() : {};
     // @ts-ignore
-    const image = req.file;
+    const image = req.file as Express.Multer.File | undefined;
     if (!image) {
       return res.json({
         success: false,
@@ -211,7 +211,6 @@ export const removeImageBackground = async (
       });
     }
 
-    // console.log(image?.path)
     // @ts-ignore
     const plan = req.plan as "Premium" | "Free";
     if (plan !== "Premium") {
@@ -251,7 +250,7 @@ export const removeImageObject = async (
     // @ts-ignore
     const { userId } = req.auth ? await req.auth() : {};
     const { object } = req.body;
-    const image = req.file;
+    const image = req.file as Express.Multer.File | undefined;
     if (!image) {
       return res.json({
         success: false,
