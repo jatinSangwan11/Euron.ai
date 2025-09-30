@@ -192,6 +192,7 @@ export const removeImageBackground = async (
   try {
     // @ts-ignore
     const { userId } = req.auth ? await req.auth() : {};
+    // @ts-ignore
     const image = req.file;
     // console.log(image?.path)
     // @ts-ignore
@@ -202,7 +203,12 @@ export const removeImageBackground = async (
         message: "This feature is only available for premium subscriptions",
       });
     }
-
+      if(!image){
+      return res.json({
+        success: false,
+        message: "upload the image first"
+      })
+    }
     // we will store this image on cloudinary
    const {secure_url} = await cloudinary.uploader.upload(image.path,{
     transformation: [
