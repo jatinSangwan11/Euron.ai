@@ -1,8 +1,4 @@
 import type { Request, Response } from "express";
-import { createRequire } from "module";
-const require = createRequire(import.meta.url);
-// @ts-ignore
-const { getAuth } = require("@clerk/express/cjs");
 import sql from "../configs/db.js";
 
 
@@ -11,7 +7,7 @@ export const getUserCreations = async (req: Request, res: Response) => {
         if(!sql){
             return res.status(500).json({ success: false, message: "Database not configured (missing DB_URL)" });
         }
-        const { userId } = getAuth(req);
+        const userId = req.header('x-user-id');
         if (!userId) {
             return res.status(401).json({ success: false, message: "Unauthorized" });
         }
@@ -55,7 +51,7 @@ export const toogleLikeCreation = async (req: Request, res: Response) => {
         if(!sql){
             return res.status(500).json({ success: false, message: "Database not configured (missing DB_URL)" });
         }
-        const { userId } = getAuth(req);
+        const userId = req.header('x-user-id');
         if (!userId) {
             return res.status(401).json({ success: false, message: "Unauthorized" });
         }

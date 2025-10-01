@@ -1,8 +1,6 @@
 import type { Request, Response } from "express";
 import { createRequire } from "module";
 const require = createRequire(import.meta.url);
-// @ts-ignore
-const { getAuth, clerkClient } = require("@clerk/express/cjs");
 // import OpenAI  from "openai";
 import sql from "../configs/db.js";
 import axios from "axios";
@@ -50,7 +48,7 @@ export const generateArticle = async (
   res: Response<Partial<ResponseType>>
 ): Promise<Response> => {
   try {
-    const { userId } = getAuth(req);
+    const userId = req.header('x-user-id');
     const { prompt, length } = req.body ?? {};
     // @ts-ignore
     const plan = req.plan as "Premium" | "Free";
@@ -78,11 +76,7 @@ export const generateArticle = async (
     await db`INSERT INTO creations (user_id, prompt, content, type)
               VALUES (${userId}, ${prompt}, ${content}, 'article')`;
 
-    if (plan === "Free") {
-      await clerkClient.users.updateUserMetadata(userId, {
-        privateMetadata: { free_usage: free_usage + 1 },
-      });
-    }
+    // In header-based auth mode, client should manage free_usage
     // console.log('req:::', req)
     console.log("content:::", content);
     return res.json({ success: true, content });
@@ -119,7 +113,7 @@ export const generateBlogTitle = async (
   res: Response<Partial<ResponseType>>
 ): Promise<Response> => {
   try {
-    const { userId } = getAuth(req);
+    const userId = req.header('x-user-id');
     const { prompt, length } = req.body ?? {};
     // @ts-ignore
     const plan = req.plan as "Premium" | "Free";
@@ -147,11 +141,7 @@ export const generateBlogTitle = async (
     await db`INSERT INTO creations (user_id, prompt, content, type)
               VALUES (${userId}, ${prompt}, ${content}, 'blog-title')`;
 
-    if (plan === "Free") {
-      await clerkClient.users.updateUserMetadata(userId, {
-        privateMetadata: { free_usage: free_usage + 1 },
-      });
-    }
+    // In header-based auth mode, client should manage free_usage
     // console.log('req:::', req)
     return res.json({ success: true, content });
   } catch (error) {
@@ -168,7 +158,7 @@ export const generateImage = async (
   res: Response<Partial<ResponseType>>
 ): Promise<Response> => {
   try {
-    const { userId } = getAuth(req);
+    const userId = req.header('x-user-id');
     const { prompt, publish } = req.body;
     // @ts-ignore
     const plan = req.plan;
@@ -228,7 +218,7 @@ export const removeImageBackground = async (
   res: Response<Partial<ResponseType>>
 ): Promise<Response> => {
   try {
-    const { userId } = getAuth(req);
+    const userId = req.header('x-user-id');
     // @ts-ignore
     const image = req.file as Express.Multer.File | undefined;
     if (!image) {
@@ -278,7 +268,7 @@ export const removeImageObject = async (
   res: Response<Partial<ResponseType>>
 ): Promise<Response> => {
   try {
-    const { userId } = getAuth(req);
+    const userId = req.header('x-user-id');
     const { object } = req.body;
     const image = req.file as Express.Multer.File | undefined;
     if (!image) {
@@ -332,7 +322,7 @@ export const resumeReview = async (
   res: Response<Partial<ResponseType>>
 ): Promise<Response> => {
   try {
-    const { userId } = getAuth(req);
+    const userId = req.header('x-user-id');
     const resume = req.file as Express.Multer.File | undefined;
     if (!resume) {
       return res.json({ success: false, message: "upload the resume first" });
