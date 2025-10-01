@@ -1,11 +1,14 @@
 import type { Request, Response } from "express";
+import { getAuth } from "@clerk/express";
 import sql from "../configs/db.ts";
 
 
 export const getUserCreations = async (req: Request, res: Response) => {
     try{
-        // @ts-ignore
-        const {userId} = req.auth();
+        const { userId } = getAuth(req);
+        if (!userId) {
+            return res.status(401).json({ success: false, message: "Unauthorized" });
+        }
 
         const creations = await sql`SELECT * FROM creations WHERE user_id = ${userId} ORDER BY created_at DESC`;
         res.json({
@@ -40,8 +43,10 @@ export const getPublishedCreations = async (req: Request, res: Response) => {
 
 export const toogleLikeCreation = async (req: Request, res: Response) => {
     try{
-        // @ts-ignore
-        const {userId} = req.auth()
+        const { userId } = getAuth(req);
+        if (!userId) {
+            return res.status(401).json({ success: false, message: "Unauthorized" });
+        }
         const {id} = req.body;
         
         const [creation] = await sql`SELECT * FROM creations WHERE id = ${id}`;
