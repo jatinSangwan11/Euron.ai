@@ -3,18 +3,15 @@
   "version": "1.0.0",
   "description": "",
   "main": "src/index.ts",
- "scripts": {
-  "start": "nodemon src/index.ts",
-  "script": "node src/index.ts",
-  "build": "rimraf dist && tsc",
-  "ts.check": "tsc --project tsconfig.json",
-  "add-build": "git add dist",
-  "test": "echo \"Error: no test specified\" && exit 1"
+  "scripts": {
+    "start": "nodemon src/index.ts",
+    "script": "node src/index.ts",
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
   "pre-commit": [
-      "ts.check",
-      "build",
-      "add-build"
+    "ts.check",
+    "build",
+    "add-build"
   ],
   "keywords": [],
   "author": "",
@@ -30,10 +27,8 @@
     "dotenv": "^17.2.2",
     "express": "^5.1.0",
     "multer": "^2.0.2",
-    "openai": "^5.23.1",
-    "pdf-parse": "^1.1.1",
-    "pre-commit": "^1.2.2",
-    "rimraf": "^6.0.1"
+    "openai": "^4.55.0",
+    "pdf-parse": "^1.1.1"
   },
   "devDependencies": {
     "@types/cors": "^2.8.19",
