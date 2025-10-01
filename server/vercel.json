@@ -8,8 +8,7 @@
         "includeFiles": [
           "dist/**",
           "node_modules/@clerk/**"
-        ],
-        "bundle": false
+        ]
       }
     }
   ],

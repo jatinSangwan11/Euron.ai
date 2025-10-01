@@ -1,6 +1,8 @@
 import express from "express";
 import cors from 'cors';
 import 'dotenv/config';
+import { createRequire } from 'module';
+const require = createRequire(import.meta.url);
 import connectCloudinary from "./configs/cloudinary.js";
 import aiRouter from "./routes/aiRoutes.js";
 import userRouter from "./routes/userRouter.js";
@@ -17,8 +19,9 @@ await connectCloudinary();
 app.use(cors());
 app.use(express.json());
 if (process.env.CLERK_SECRET_KEY) {
-    // Lazy-load Clerk only when configured, to avoid bundling/runtime issues
-    const { clerkMiddleware, requireAuth } = await import('@clerk/express');
+    // Load CJS build of Clerk to avoid missing ESM chunk files on Vercel
+    // @ts-ignore
+    const { clerkMiddleware, requireAuth } = require('@clerk/express/cjs');
     app.use(clerkMiddleware());
     // Protect all subsequent routes; the root health route stays public
     app.use(requireAuth());
