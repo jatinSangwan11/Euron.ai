@@ -7,7 +7,7 @@ declare global {
       files?: Multer.File[];
       plan?: "Premium" | "Free";
       free_usage?: number;
-      userId?: string;
+      auth?: () => Promise<{ userId?: string; has?: (perm: string) => boolean }>;
     }
   }
 }

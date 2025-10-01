@@ -48,7 +48,8 @@ export const generateArticle = async (
   res: Response<Partial<ResponseType>>
 ): Promise<Response> => {
   try {
-    const userId = req.userId;
+    // @ts-ignore
+    const { userId } = await req.auth?.() ?? {};
     const { prompt, length } = req.body ?? {};
     // @ts-ignore
     const plan = req.plan as "Premium" | "Free";
@@ -113,7 +114,8 @@ export const generateBlogTitle = async (
   res: Response<Partial<ResponseType>>
 ): Promise<Response> => {
   try {
-    const userId = req.userId;
+    // @ts-ignore
+    const { userId } = await req.auth?.() ?? {};
     const { prompt, length } = req.body ?? {};
     // @ts-ignore
     const plan = req.plan as "Premium" | "Free";
@@ -158,7 +160,8 @@ export const generateImage = async (
   res: Response<Partial<ResponseType>>
 ): Promise<Response> => {
   try {
-    const userId = req.userId;
+    // @ts-ignore
+    const { userId } = await req.auth?.() ?? {};
     const { prompt, publish } = req.body;
     // @ts-ignore
     const plan = req.plan;
@@ -218,7 +221,8 @@ export const removeImageBackground = async (
   res: Response<Partial<ResponseType>>
 ): Promise<Response> => {
   try {
-    const userId = req.userId;
+    // @ts-ignore
+    const { userId } = await req.auth?.() ?? {};
     // @ts-ignore
     const image = req.file as Express.Multer.File | undefined;
     if (!image) {
