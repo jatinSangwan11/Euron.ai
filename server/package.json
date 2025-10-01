@@ -19,7 +19,6 @@
   "license": "ISC",
   "type": "module",
   "dependencies": {
-    "@clerk/clerk-sdk-node": "^5.0.23",
     "@clerk/express": "^1.7.33",
     "@clerk/backend": "^1.7.33",
     "cookie": "^0.6.0",
