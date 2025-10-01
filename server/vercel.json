@@ -3,10 +3,7 @@
   "builds": [
     {
       "src": "api/index.ts",
-      "use": "@vercel/node",
-      "config": {
-        "includeFiles": ["node_modules/@clerk/**"]
-      }
+      "use": "@vercel/node"
     }
   ],
   "routes": [
