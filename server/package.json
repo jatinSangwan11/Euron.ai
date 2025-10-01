@@ -19,7 +19,7 @@
   "license": "ISC",
   "type": "module",
   "dependencies": {
-    "@clerk/express": "^1.7.33",
+    "@clerk/express": "1.7.20",
     "@clerk/backend": "^1.7.33",
     "cookie": "^0.6.0",
     "@neondatabase/serverless": "^1.0.1",
