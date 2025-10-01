@@ -6,7 +6,11 @@ import { clerkClient } from "@clerk/express";
 import axios from "axios";
 import { v2 as cloudinary } from "cloudinary";
 import fs from "fs";
-import pdf from "pdf-parse";
+import { createRequire } from "module";
+const require = createRequire(import.meta.url);
+// Load CommonJS module via require so module.parent is set and the self-test in pdf-parse doesn't run
+// @ts-ignore
+const pdf = require("pdf-parse");
 
 async function createChatCompletion(prompt: string, maxTokens: number) {
   const resp = await fetch(
