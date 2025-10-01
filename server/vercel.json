@@ -5,17 +5,11 @@
       "src": "api/index.ts",
       "use": "@vercel/node",
       "config": {
-        "includeFiles": [
-          "node_modules/**",
-          "node_modules/@clerk/shared/dist/**",
-          "node_modules/@clerk/express/dist/**",
-          "dist/**"
-        ],
-        "bundle": false
+        "includeFiles": ["node_modules/@clerk/**"]
       }
     }
   ],
   "routes": [
-    { "src": "/(.*)", "dest": "/api/index.ts" }
+    { "src": "/(.*)", "dest": "/api" }
   ]
 }
