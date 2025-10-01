@@ -1,6 +1,6 @@
 import type { Request, Response } from "express";
 import { getAuth } from "@clerk/express";
-import sql from "../configs/db.ts";
+import sql from "../configs/db.js";
 
 
 export const getUserCreations = async (req: Request, res: Response) => {

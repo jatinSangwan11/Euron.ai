@@ -18,8 +18,8 @@
 
     "noUncheckedIndexedAccess": true,
     "exactOptionalPropertyTypes": true,
-    "allowImportingTsExtensions": true,
-    "noEmit": true,
+    
+    "noEmit": false,
 
     "strict": true,
     "jsx": "react-jsx",
