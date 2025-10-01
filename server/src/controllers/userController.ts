@@ -7,7 +7,7 @@ export const getUserCreations = async (req: Request, res: Response) => {
         if(!sql){
             return res.status(500).json({ success: false, message: "Database not configured (missing DB_URL)" });
         }
-        const userId = req.header('x-user-id');
+        const userId = req.userId;
         if (!userId) {
             return res.status(401).json({ success: false, message: "Unauthorized" });
         }
@@ -51,7 +51,7 @@ export const toogleLikeCreation = async (req: Request, res: Response) => {
         if(!sql){
             return res.status(500).json({ success: false, message: "Database not configured (missing DB_URL)" });
         }
-        const userId = req.header('x-user-id');
+        const userId = req.userId;
         if (!userId) {
             return res.status(401).json({ success: false, message: "Unauthorized" });
         }

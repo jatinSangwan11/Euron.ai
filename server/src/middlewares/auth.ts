@@ -1,20 +1,30 @@
 // middleware to check userId and check for the premium plan 
 import type { NextFunction, Request, Response } from "express";
+import { createClerkClient, verifyToken } from '@clerk/backend';
 
 export const auth = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        const userId = req.header('x-user-id') || undefined;
-        const planHeader = req.header('x-user-plan');
-        if (!userId) {
-            return res.status(401).json({ error: "Unauthorized" });
+        const authHeader = req.header('authorization') || req.header('Authorization');
+        const token = authHeader?.startsWith('Bearer ')? authHeader.slice(7): undefined;
+        if(!token){
+            return res.status(401).json({ error: "Missing Bearer token" });
         }
+
+        const decoded = await verifyToken(token, {
+            secretKey: process.env.CLERK_SECRET_KEY as string
+        });
+
         // @ts-ignore
-        req.plan = planHeader === 'Premium' ? 'Premium' : 'Free';
+        req.userId = decoded.sub || decoded.payload?.sub;
+
+        // Map plan and free_usage from claims or default headers if present
         // @ts-ignore
-        req.free_usage = Number(req.header('x-free-usage') || 0);
+        req.plan = (decoded.payload?.privateMetadata?.premium || decoded.payload?.publicMetadata?.premium) ? 'Premium' : 'Free';
+        // @ts-ignore
+        req.free_usage = Number(decoded.payload?.privateMetadata?.free_usage ?? req.header('x-free-usage') ?? 0);
         next();
     } catch (error) {
         console.error("auth error::", error);
-        res.json({sucess: false, message: error});
+        res.status(401).json({sucess: false, message: 'Unauthorized'});
     }
 }

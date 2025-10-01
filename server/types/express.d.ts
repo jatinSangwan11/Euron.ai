@@ -7,6 +7,7 @@ declare global {
       files?: Multer.File[];
       plan?: "Premium" | "Free";
       free_usage?: number;
+      userId?: string;
     }
   }
 }
