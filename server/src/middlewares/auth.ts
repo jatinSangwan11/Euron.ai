@@ -1,5 +1,5 @@
 // middleware to check userId and check for the premium plan 
-import { clerkClient, getAuth, type User } from "@clerk/clerk-sdk-node";
+import { clerkClient, getAuth, type User } from "@clerk/express";
 import type { NextFunction, Request, Response } from "express";
 
 export const auth = async (req: Request, res: Response, next: NextFunction) => {
