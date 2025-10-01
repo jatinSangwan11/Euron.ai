@@ -8,15 +8,16 @@ import userRouter from "./routes/userRouter.ts";
 
 const app = express();
 
+// Health first, independent of Clerk/DB
+app.get('/', (req, res) => {
+    res.json({ message: "server is working ..." });
+});
+
 await connectCloudinary();
 
 app.use(cors());
 app.use(express.json());
 app.use(clerkMiddleware());
-
-app.get('/', (req, res) => {
-    res.json({ message: "server is working ..." });
-});
 
 // Protect all subsequent routes; the root health route stays public
 app.use(requireAuth());

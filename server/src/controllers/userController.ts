@@ -5,6 +5,9 @@ import sql from "../configs/db.ts";
 
 export const getUserCreations = async (req: Request, res: Response) => {
     try{
+        if(!sql){
+            return res.status(500).json({ success: false, message: "Database not configured (missing DB_URL)" });
+        }
         const { userId } = getAuth(req);
         if (!userId) {
             return res.status(401).json({ success: false, message: "Unauthorized" });
@@ -26,6 +29,9 @@ export const getUserCreations = async (req: Request, res: Response) => {
 
 export const getPublishedCreations = async (req: Request, res: Response) => {
     try{
+        if(!sql){
+            return res.status(500).json({ success: false, message: "Database not configured (missing DB_URL)" });
+        }
 
         const creations = await sql`SELECT * FROM creations WHERE publish = true ORDER BY created_at DESC`;
         res.json({
@@ -43,13 +49,19 @@ export const getPublishedCreations = async (req: Request, res: Response) => {
 
 export const toogleLikeCreation = async (req: Request, res: Response) => {
     try{
+        if(!sql){
+            return res.status(500).json({ success: false, message: "Database not configured (missing DB_URL)" });
+        }
         const { userId } = getAuth(req);
         if (!userId) {
             return res.status(401).json({ success: false, message: "Unauthorized" });
         }
         const {id} = req.body;
         
-        const [creation] = await sql`SELECT * FROM creations WHERE id = ${id}`;
+        const creationResult = await sql`SELECT * FROM creations WHERE id = ${id}`;
+        const creation = Array.isArray(creationResult)
+            ? (creationResult as any[])[0]
+            : (creationResult as any)?.[0] ?? (creationResult as any)?.rows?.[0];
 
         if(!creation){
             return res.json({
@@ -58,7 +70,7 @@ export const toogleLikeCreation = async (req: Request, res: Response) => {
             })
         }
 
-        const currentLikes = creation.likes;
+        const currentLikes: string[] = Array.isArray(creation.likes) ? creation.likes : [];
         const userIdStr = userId.toString();
         let updatedLikes;
         let message;

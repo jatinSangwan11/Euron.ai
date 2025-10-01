@@ -1,8 +1,11 @@
 import { neon } from "@neondatabase/serverless";
 
-if (!process.env.DB_URL) {
-  throw new Error("DB_URL environment variable is not defined");
+let sql: ReturnType<typeof neon> | undefined;
+const dbUrl = process.env.DB_URL;
+if (dbUrl) {
+  sql = neon(dbUrl as string);
+} else {
+  console.warn("DB_URL not set. Database operations will fail until configured.");
 }
-const sql = neon(process.env.DB_URL as string);
 
 export default sql;
