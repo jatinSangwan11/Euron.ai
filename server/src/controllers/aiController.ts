@@ -1,8 +1,7 @@
 import type { Request, Response } from "express";
-import { getAuth } from "@clerk/express";
+import { getAuth, clerkClient } from "@clerk/clerk-sdk-node";
 // import OpenAI  from "openai";
 import sql from "../configs/db.js";
-import { clerkClient } from "@clerk/express";
 import axios from "axios";
 import { v2 as cloudinary } from "cloudinary";
 import fs from "fs";

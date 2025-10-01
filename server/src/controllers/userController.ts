@@ -1,5 +1,5 @@
 import type { Request, Response } from "express";
-import { getAuth } from "@clerk/express";
+import { getAuth } from "@clerk/clerk-sdk-node";
 import sql from "../configs/db.js";
 
 

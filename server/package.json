@@ -19,6 +19,7 @@
   "license": "ISC",
   "type": "module",
   "dependencies": {
+    "@clerk/clerk-sdk-node": "^5.0.23",
     "@clerk/express": "^1.7.33",
     "@neondatabase/serverless": "^1.0.1",
     "@types/pdf-parse": "^1.1.5",
