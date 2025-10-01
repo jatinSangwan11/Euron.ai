@@ -1,11 +1,10 @@
 // middleware to check userId and check for the premium plan 
-import { clerkClient, type User } from "@clerk/express";
+import { clerkClient, getAuth, type User } from "@clerk/express";
 import type { NextFunction, Request, Response } from "express";
 
 export const auth = async (req: Request, res: Response, next: NextFunction) => {
     try {
-         // @ts-ignore
-        const { userId, has } = req.auth ? await req.auth() : {};
+        const { userId, has } = getAuth(req);
         if (!userId) {
             return res.status(401).json({ error: "Unauthorized" });
         }
