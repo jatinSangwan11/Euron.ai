@@ -17,10 +17,13 @@ await connectCloudinary();
 
 app.use(cors());
 app.use(express.json());
-app.use(clerkMiddleware());
-
-// Protect all subsequent routes; the root health route stays public
-app.use(requireAuth());
+if (process.env.CLERK_SECRET_KEY) {
+    app.use(clerkMiddleware());
+    // Protect all subsequent routes; the root health route stays public
+    app.use(requireAuth());
+} else {
+    console.warn('CLERK_SECRET_KEY not set. Auth middleware is disabled.');
+}
 
 app.use('/api/ai', aiRouter);
 app.use('/api/user', userRouter);
