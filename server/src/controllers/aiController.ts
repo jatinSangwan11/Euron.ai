@@ -1,5 +1,5 @@
 import type { Request, Response } from "express";
-import OpenAI  from "openai";
+import {OpenAI}  from "openai";
 import sql from "../configs/db.ts";
 import { clerkClient } from "@clerk/express";
 import axios from "axios";
