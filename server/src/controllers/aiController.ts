@@ -1,12 +1,13 @@
 import type { Request, Response } from "express";
-import { getAuth, clerkClient } from "@clerk/express";
+import { createRequire } from "module";
+const require = createRequire(import.meta.url);
+// @ts-ignore
+const { getAuth, clerkClient } = require("@clerk/express/cjs");
 // import OpenAI  from "openai";
 import sql from "../configs/db.js";
 import axios from "axios";
 import { v2 as cloudinary } from "cloudinary";
 import fs from "fs";
-import { createRequire } from "module";
-const require = createRequire(import.meta.url);
 // Load CommonJS module via require so module.parent is set and the self-test in pdf-parse doesn't run
 // @ts-ignore
 const pdf = require("pdf-parse");

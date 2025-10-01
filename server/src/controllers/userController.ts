@@ -1,5 +1,8 @@
 import type { Request, Response } from "express";
-import { getAuth } from "@clerk/express";
+import { createRequire } from "module";
+const require = createRequire(import.meta.url);
+// @ts-ignore
+const { getAuth } = require("@clerk/express/cjs");
 import sql from "../configs/db.js";
 
 

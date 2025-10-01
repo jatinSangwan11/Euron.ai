@@ -1,5 +1,9 @@
 // middleware to check userId and check for the premium plan 
-import { clerkClient, getAuth, type User } from "@clerk/express";
+import { createRequire } from "module";
+const require = createRequire(import.meta.url);
+// @ts-ignore
+const { clerkClient, getAuth } = require("@clerk/express/cjs");
+import type { User } from "@clerk/express";
 import type { NextFunction, Request, Response } from "express";
 
 export const auth = async (req: Request, res: Response, next: NextFunction) => {
