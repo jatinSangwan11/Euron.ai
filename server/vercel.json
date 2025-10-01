@@ -7,7 +7,8 @@
       "config": {
         "includeFiles": [
           "dist/**",
-          "node_modules/@clerk/**"
+          "node_modules/@clerk/**",
+          "node_modules/cookie/**"
         ]
       }
     }

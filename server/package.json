@@ -21,6 +21,7 @@
   "dependencies": {
     "@clerk/clerk-sdk-node": "^5.0.23",
     "@clerk/express": "^1.7.33",
+    "cookie": "^0.6.0",
     "@neondatabase/serverless": "^1.0.1",
     "@types/pdf-parse": "^1.1.5",
     "axios": "^1.12.2",
