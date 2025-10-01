@@ -1,7 +1,6 @@
 import express from "express";
 import cors from 'cors';
 import 'dotenv/config';
-import { clerkMiddleware, requireAuth } from '@clerk/express';
 import connectCloudinary from "./configs/cloudinary.js";
 import aiRouter from "./routes/aiRoutes.js";
 import userRouter from "./routes/userRouter.js";
@@ -18,6 +17,8 @@ await connectCloudinary();
 app.use(cors());
 app.use(express.json());
 if (process.env.CLERK_SECRET_KEY) {
+    // Lazy-load Clerk only when configured, to avoid bundling/runtime issues
+    const { clerkMiddleware, requireAuth } = await import('@clerk/express');
     app.use(clerkMiddleware());
     // Protect all subsequent routes; the root health route stays public
     app.use(requireAuth());
