@@ -1,5 +1,5 @@
 import type { Request, Response } from "express";
-import OpenAI  from "openai";
+// import OpenAI  from "openai";
 import sql from "../configs/db.ts";
 import { clerkClient } from "@clerk/express";
 import axios from "axios";
@@ -7,10 +7,30 @@ import { v2 as cloudinary } from "cloudinary";
 import fs from "fs";
 import pdf from "pdf-parse";
 
-const AI = new OpenAI({
-  apiKey: process.env.GEMINI_API_KEY!,
-  baseURL: "https://generativelanguage.googleapis.com/v1beta/openai/",
-});
+async function createChatCompletion(prompt: string, maxTokens: number) {
+  const resp = await fetch(
+    "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions",
+    {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${process.env.GEMINI_API_KEY}`,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        model: "gemini-2.0-flash",
+        messages: [{ role: "user", content: prompt }],
+        temperature: 0.7,
+        max_tokens: Number(maxTokens)
+      })
+    }
+  );
+  if (!resp.ok) {
+    const text = await resp.text();
+    throw new Error(`Gemini error ${resp.status}: ${text}`);
+  }
+  const data = await resp.json();
+  return data?.choices?.[0]?.message?.content ?? "";
+}
 
 interface ResponseType {
   success: boolean;
@@ -45,15 +65,7 @@ export const generateArticle = async (
       });
     }
 
-    const response = await AI.chat.completions.create({
-      model: "gemini-2.0-flash",
-      messages: [{ role: "user", content: prompt }],
-      temperature: 0.7,
-      max_tokens: Number(length),
-    });
-
-    const content = response.choices[0]?.message.content ?? "";
-    console.log("content:::", content);
+    const content = await createChatCompletion(prompt, Number(length));
 
     await sql`INSERT INTO creations (user_id, prompt, content, type)
               VALUES (${userId}, ${prompt}, ${content}, 'article')`;
@@ -119,14 +131,7 @@ export const generateBlogTitle = async (
       });
     }
 
-    const response = await AI.chat.completions.create({
-      model: "gemini-2.0-flash",
-      messages: [{ role: "user", content: prompt }],
-      temperature: 0.7,
-      max_tokens: 200,
-    });
-
-    const content = response.choices[0]?.message.content ?? "";
+   const content = await createChatCompletion(prompt, Number(length));
 
     await sql`INSERT INTO creations (user_id, prompt, content, type)
               VALUES (${userId}, ${prompt}, ${content}, 'blog-title')`;
@@ -332,14 +337,7 @@ export const resumeReview = async (
     const prompt = `Review the following resume and provide constructive feedback on its
     strengths, weakness, and areas for improvement. Resume content:\n\n${pdfData.text} in less than 700 words`;
 
-    const response = await AI.chat.completions.create({
-      model: "gemini-2.0-flash",
-      messages: [{ role: "user", content: prompt }],
-      temperature: 0.7,
-      max_tokens: 700,
-    });
-
-    const content = response.choices[0]?.message.content ?? "";
+    const content = await createChatCompletion(prompt, Number(length));
 
     await sql`INSERT INTO creations (user_id, prompt, content, type)
               VALUES (${userId}, 'Review the uploaded resume', ${content}, 'resume-review')`;
