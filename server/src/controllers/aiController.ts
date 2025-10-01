@@ -1,4 +1,5 @@
 import type { Request, Response } from "express";
+import { getAuth } from "@clerk/express";
 // import OpenAI  from "openai";
 import sql from "../configs/db.ts";
 import { clerkClient } from "@clerk/express";
@@ -45,9 +46,8 @@ export const generateArticle = async (
   res: Response<Partial<ResponseType>>
 ): Promise<Response> => {
   try {
-    // @ts-ignore
-    const { userId } = req.auth ? await req.auth() : {};
-    const { prompt, length } = req.body;
+    const { userId } = getAuth(req);
+    const { prompt, length } = req.body ?? {};
     // @ts-ignore
     const plan = req.plan as "Premium" | "Free";
     // @ts-ignore
@@ -65,9 +65,13 @@ export const generateArticle = async (
       });
     }
 
-    const content = await createChatCompletion(prompt, Number(length));
+    const content = await createChatCompletion(prompt, Number(length ?? 700));
 
-    await sql`INSERT INTO creations (user_id, prompt, content, type)
+    const db = sql;
+    if (!db) {
+      return res.status(500).json({ success: false, message: "Database not configured (missing DB_URL)" });
+    }
+    await db`INSERT INTO creations (user_id, prompt, content, type)
               VALUES (${userId}, ${prompt}, ${content}, 'article')`;
 
     if (plan === "Free") {
@@ -111,9 +115,8 @@ export const generateBlogTitle = async (
   res: Response<Partial<ResponseType>>
 ): Promise<Response> => {
   try {
-    // @ts-ignore
-    const { userId } = req.auth ? await req.auth() : {};
-    const { prompt } = req.body;
+    const { userId } = getAuth(req);
+    const { prompt, length } = req.body ?? {};
     // @ts-ignore
     const plan = req.plan as "Premium" | "Free";
     // @ts-ignore
@@ -131,9 +134,13 @@ export const generateBlogTitle = async (
       });
     }
 
-   const content = await createChatCompletion(prompt, Number(length));
+   const content = await createChatCompletion(prompt, Number(length ?? 60));
 
-    await sql`INSERT INTO creations (user_id, prompt, content, type)
+    const db = sql;
+    if (!db) {
+      return res.status(500).json({ success: false, message: "Database not configured (missing DB_URL)" });
+    }
+    await db`INSERT INTO creations (user_id, prompt, content, type)
               VALUES (${userId}, ${prompt}, ${content}, 'blog-title')`;
 
     if (plan === "Free") {
@@ -157,8 +164,7 @@ export const generateImage = async (
   res: Response<Partial<ResponseType>>
 ): Promise<Response> => {
   try {
-    // @ts-ignore
-    const { userId } = req.auth ? await req.auth() : {};
+    const { userId } = getAuth(req);
     const { prompt, publish } = req.body;
     // @ts-ignore
     const plan = req.plan;
@@ -193,7 +199,11 @@ export const generateImage = async (
     // we will store this image on cloudinary
     const { secure_url } = await cloudinary.uploader.upload(base64Image);
 
-    await sql`INSERT INTO creations (user_id, prompt, content, type, publish)
+    const db = sql;
+    if (!db) {
+      return res.status(500).json({ success: false, message: "Database not configured (missing DB_URL)" });
+    }
+    await db`INSERT INTO creations (user_id, prompt, content, type, publish)
               VALUES (${userId}, ${prompt}, ${secure_url}, 'image', ${
       publish ?? false
     })`;
@@ -214,8 +224,7 @@ export const removeImageBackground = async (
   res: Response<Partial<ResponseType>>
 ): Promise<Response> => {
   try {
-    // @ts-ignore
-    const { userId } = req.auth ? await req.auth() : {};
+    const { userId } = getAuth(req);
     // @ts-ignore
     const image = req.file as Express.Multer.File | undefined;
     if (!image) {
@@ -242,7 +251,11 @@ export const removeImageBackground = async (
         },
       ],
     });
-    await sql`INSERT INTO creations (user_id, prompt, content, type)
+    const db = sql;
+    if (!db) {
+      return res.status(500).json({ success: false, message: "Database not configured (missing DB_URL)" });
+    }
+    await db`INSERT INTO creations (user_id, prompt, content, type)
       VALUES (${userId}, 'Remove background from image', ${secure_url}, 'image')`;
 
     // console.log('req:::', req)
@@ -261,8 +274,7 @@ export const removeImageObject = async (
   res: Response<Partial<ResponseType>>
 ): Promise<Response> => {
   try {
-    // @ts-ignore
-    const { userId } = req.auth ? await req.auth() : {};
+    const { userId } = getAuth(req);
     const { object } = req.body;
     const image = req.file as Express.Multer.File | undefined;
     if (!image) {
@@ -293,7 +305,11 @@ export const removeImageObject = async (
       resource_type: "image",
     });
 
-    await sql`INSERT INTO creations (user_id, prompt, content, type)
+    const db = sql;
+    if (!db) {
+      return res.status(500).json({ success: false, message: "Database not configured (missing DB_URL)" });
+    }
+    await db`INSERT INTO creations (user_id, prompt, content, type)
               VALUES (${userId}, ${`Removed ${object} from image`}, ${image_url}, 'image')`;
 
     // console.log('req:::', req)
@@ -312,8 +328,7 @@ export const resumeReview = async (
   res: Response<Partial<ResponseType>>
 ): Promise<Response> => {
   try {
-    // @ts-ignore
-    const { userId } = req.auth ? await req.auth() : {};
+    const { userId } = getAuth(req);
     const resume = req.file as Express.Multer.File | undefined;
     if (!resume) {
       return res.json({ success: false, message: "upload the resume first" });
@@ -337,9 +352,13 @@ export const resumeReview = async (
     const prompt = `Review the following resume and provide constructive feedback on its
     strengths, weakness, and areas for improvement. Resume content:\n\n${pdfData.text} in less than 700 words`;
 
-    const content = await createChatCompletion(prompt, Number(length));
+    const content = await createChatCompletion(prompt, Number((req.body?.length ?? 700)));
 
-    await sql`INSERT INTO creations (user_id, prompt, content, type)
+    const db = sql;
+    if (!db) {
+      return res.status(500).json({ success: false, message: "Database not configured (missing DB_URL)" });
+    }
+    await db`INSERT INTO creations (user_id, prompt, content, type)
               VALUES (${userId}, 'Review the uploaded resume', ${content}, 'resume-review')`;
 
     // console.log('req:::', req)
