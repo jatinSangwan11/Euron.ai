@@ -27,7 +27,6 @@
     "dotenv": "^17.2.2",
     "express": "^5.1.0",
     "multer": "^2.0.2",
-    "openai": "^4.55.0",
     "pdf-parse": "^1.1.1"
   },
   "devDependencies": {
