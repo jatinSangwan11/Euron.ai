@@ -1,50 +1,66 @@
-🚀 EuronAI Server
+# 🌐 EuronAI
 
-This is the backend service for EuronAI, built with Express.js (TypeScript), deployed on Vercel, and powered by Clerk (authentication), Cloudinary (media storage), Neon/Postgres (database), and AI integrations (Google Gemini + ClipDrop).
+Full-stack AI-powered platform built with **React.js frontend** and **Express.js (TypeScript) backend**, deployed on **Vercel**.  
+The app integrates **Google Gemini**, **ClipDrop**, **Clerk (Auth)**, **Neon (Postgres)**, and **Cloudinary** to provide seamless AI-driven article generation, image editing, and resume review features.
 
-📂 Project Structure
-.
-├── api/                # Entrypoint for Vercel serverless functions
-│   └── index.ts        # Exports the Express app
-├── src/
-│   ├── controllers/    # Route controllers (AI, images, resume, etc.)
-│   ├── routes/         # Express routers
-│   ├── middlewares/    # Custom auth & middleware
-│   ├── configs/        # Configurations (db, cloudinary, etc.)
-│   └── index.ts        # Express app setup
-├── types/              # Global TypeScript type augmentation
-├── vercel.json         # Vercel build & routing config
-├── package.json
-└── tsconfig.json
+🔗 **Repo:** [Euron.ai](https://github.com/jatinSangwan11/Euron.ai)
 
-⚙️ Tech Stack
+---
 
-Runtime: Node.js + Express (TypeScript 5.9)
+## 📂 Monorepo Structure
 
-Database: Postgres (via Neon serverless)
+```
+Euron.ai/
+├── client/              # React.js frontend
+│   ├── src/
+│   ├── public/
+│   └── package.json
+│
+├── server/              # Express + TypeScript backend
+│   ├── src/
+│   │   ├── controllers/
+│   │   ├── routes/
+│   │   ├── middlewares/
+│   │   └── configs/
+│   ├── types/
+│   ├── package.json
+│   └── tsconfig.json
+│
+├── .gitignore
+└── README.md
+```
 
-Auth: Clerk
- middleware
+---
 
-AI APIs:
+## ⚙️ Tech Stack
 
-Google Gemini (via OpenAI SDK compatibility layer)
+### Frontend (client/)
+- ⚛️ **React.js**
+- 🎨 **Tailwind CSS**
+- 🔑 **Clerk** (authentication UI)
+- ⚡ REST API calls to backend
 
-ClipDrop (text-to-image, background removal, object removal)
+### Backend (server/)
+- 🟦 **Express.js (TypeScript)**
+- 🗄 **Neon/Postgres** (serverless DB)
+- 🔑 **Clerk** (auth middleware)
+- 🖼 **Cloudinary** (media storage)
+- 🤖 **Google Gemini API** (via OpenAI SDK)
+- 🎨 **ClipDrop API** (text-to-image, background/object removal)
+- 📄 **PDF-parse** (resume analysis)
+- ☁️ **Vercel** (deployment)
 
-File storage: Cloudinary (image uploads & transformations)
+---
 
-PDF parsing: pdf-parse for resume reviews
+## 🔑 Environment Variables
 
-Deployment: Vercel Serverless Functions
+Create **`.env`** in both `/client` and `/server` folders:
 
-🔑 Environment Variables
-
-Create a .env file in your project root:
-
+### `/server/.env`
+```env
 # Clerk
-CLERK_PUBLISHABLE_KEY=your_key_here
-CLERK_SECRET_KEY=your_key_here
+CLERK_PUBLISHABLE_KEY=your_key
+CLERK_SECRET_KEY=your_key
 
 # Database
 DATABASE_URL=your_neon_postgres_url
@@ -55,29 +71,64 @@ CLIPDROP_API_KEY=your_clipdrop_api_key
 
 # Cloudinary
 CLOUDINARY_CLOUD_NAME=your_cloud_name
-CLOUDINARY_API_KEY=your_api_key
-CLOUDINARY_API_SECRET=your_api_secret
+CLOUDINARY_API_KEY=your_key
+CLOUDINARY_API_SECRET=your_secret
+```
 
-🖥️ Development
+### `/client/.env`
+```env
+REACT_APP_API_URL=http://localhost:3000/api
+REACT_APP_CLERK_PUBLISHABLE_KEY=your_key
+```
 
-Install dependencies:
+---
 
+## 🖥️ Local Development
+
+### 1. Clone the repo
+```bash
+git clone https://github.com/jatinSangwan11/Euron.ai.git
+cd Euron.ai
+```
+
+### 2. Install dependencies
+
+Frontend:
+```bash
+cd client
 npm install
+```
 
+Backend:
+```bash
+cd ../server
+npm install
+```
 
-Run locally with hot reload:
+### 3. Run locally
 
+Backend:
+```bash
 npm run start
+```
+Runs Express on **http://localhost:3000**
 
+Frontend:
+```bash
+cd ../client
+npm start
+```
+Runs React on **http://localhost:5173** (or CRA default `3000`)
 
-Express will run on http://localhost:3000
-.
+---
 
-📦 Deployment (Vercel)
+## 📦 Deployment (Vercel)
 
-The app is deployed via Vercel serverless functions.
-Your vercel.json config:
+The backend (`server`) is deployed as **Vercel serverless functions**.
 
+`vercel.json` config:
+
+```json
 {
   "version": 2,
   "builds": [
@@ -87,54 +138,70 @@ Your vercel.json config:
     { "src": "/(.*)", "dest": "/api" }
   ]
 }
+```
 
-🔥 Features
-✍️ AI Content
+The frontend (`client`) can be deployed on **Vercel/Netlify** separately and pointed to the backend API URL.
 
-/api/ai/generate-article → Generate full articles
+---
 
-/api/ai/generate-blog-title → Generate catchy blog titles
+## 🔥 Features
 
-🖼️ Image Tools
+### ✍️ Content AI
+- `/api/ai/generate-article` → Generate articles
+- `/api/ai/generate-blog-title` → Generate blog titles
 
-/api/ai/generate-image → AI image generation via ClipDrop
+### 🖼 Image Tools
+- `/api/ai/generate-image` → AI image generation (ClipDrop)
+- `/api/ai/remove-background` → Background removal
+- `/api/ai/remove-object` → Object removal
 
-/api/ai/remove-background → Remove image backgrounds
+### 📄 Resume Review
+- Upload a PDF → AI reviews it and provides feedback
 
-/api/ai/remove-object → Remove specific objects from images
+### 👤 Auth & Users
+- Powered by **Clerk** for secure sign-in/sign-up
+- User metadata tracked (Free vs Premium usage)
 
-📄 Resume Review
+---
 
-/api/ai/resume-review → Upload a resume PDF → receive structured feedback
+## 🧪 Example API Request
 
-👤 User Routes
-
-Clerk-authenticated routes for user management
-
-🧪 Example Request
-curl -X POST https://your-vercel-domain.vercel.app/api/ai/generate-article \
-  -H "Content-Type: application/json" \
-  -d '{
+```bash
+curl -X POST https://your-vercel-domain.vercel.app/api/ai/generate-article   -H "Content-Type: application/json"   -d '{
     "prompt": "Write about the future of AI in healthcare",
     "length": 500
   }'
-
+```
 
 Response:
-
+```json
 {
   "success": true,
   "content": "AI is transforming healthcare by..."
 }
+```
 
-🛠️ Troubleshooting
+---
 
-500: INTERNAL_SERVER_ERROR → Likely a missing/misconfigured env var.
+## 🤝 Contribution
 
-ERR_PACKAGE_PATH_NOT_EXPORTED (Clerk) → Ensure Vercel bundles your app (bundle:false should NOT be set).
+1. Fork the repo  
+2. Create your feature branch  
+   ```bash
+   git checkout -b feature/new-feature
+   ```
+3. Commit your changes  
+   ```bash
+   git commit -m 'Add new feature'
+   ```
+4. Push to branch  
+   ```bash
+   git push origin feature/new-feature
+   ```
+5. Open a Pull Request 🎉
 
-TS2351 OpenAI constructable error → Use import OpenAI from "openai"; with esModuleInterop: true.
+---
 
-📜 License
+## 📜 License
 
-MIT © 2025 EuronAI
+MIT © 2025 [Jatin Sangwan](https://github.com/jatinSangwan11)
