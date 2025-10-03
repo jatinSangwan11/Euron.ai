@@ -1,0 +1,140 @@
+🚀 EuronAI Server
+
+This is the backend service for EuronAI, built with Express.js (TypeScript), deployed on Vercel, and powered by Clerk (authentication), Cloudinary (media storage), Neon/Postgres (database), and AI integrations (Google Gemini + ClipDrop).
+
+📂 Project Structure
+.
+├── api/                # Entrypoint for Vercel serverless functions
+│   └── index.ts        # Exports the Express app
+├── src/
+│   ├── controllers/    # Route controllers (AI, images, resume, etc.)
+│   ├── routes/         # Express routers
+│   ├── middlewares/    # Custom auth & middleware
+│   ├── configs/        # Configurations (db, cloudinary, etc.)
+│   └── index.ts        # Express app setup
+├── types/              # Global TypeScript type augmentation
+├── vercel.json         # Vercel build & routing config
+├── package.json
+└── tsconfig.json
+
+⚙️ Tech Stack
+
+Runtime: Node.js + Express (TypeScript 5.9)
+
+Database: Postgres (via Neon serverless)
+
+Auth: Clerk
+ middleware
+
+AI APIs:
+
+Google Gemini (via OpenAI SDK compatibility layer)
+
+ClipDrop (text-to-image, background removal, object removal)
+
+File storage: Cloudinary (image uploads & transformations)
+
+PDF parsing: pdf-parse for resume reviews
+
+Deployment: Vercel Serverless Functions
+
+🔑 Environment Variables
+
+Create a .env file in your project root:
+
+# Clerk
+CLERK_PUBLISHABLE_KEY=your_key_here
+CLERK_SECRET_KEY=your_key_here
+
+# Database
+DATABASE_URL=your_neon_postgres_url
+
+# AI Keys
+GEMINI_API_KEY=your_gemini_api_key
+CLIPDROP_API_KEY=your_clipdrop_api_key
+
+# Cloudinary
+CLOUDINARY_CLOUD_NAME=your_cloud_name
+CLOUDINARY_API_KEY=your_api_key
+CLOUDINARY_API_SECRET=your_api_secret
+
+🖥️ Development
+
+Install dependencies:
+
+npm install
+
+
+Run locally with hot reload:
+
+npm run start
+
+
+Express will run on http://localhost:3000
+.
+
+📦 Deployment (Vercel)
+
+The app is deployed via Vercel serverless functions.
+Your vercel.json config:
+
+{
+  "version": 2,
+  "builds": [
+    { "src": "api/index.ts", "use": "@vercel/node" }
+  ],
+  "routes": [
+    { "src": "/(.*)", "dest": "/api" }
+  ]
+}
+
+🔥 Features
+✍️ AI Content
+
+/api/ai/generate-article → Generate full articles
+
+/api/ai/generate-blog-title → Generate catchy blog titles
+
+🖼️ Image Tools
+
+/api/ai/generate-image → AI image generation via ClipDrop
+
+/api/ai/remove-background → Remove image backgrounds
+
+/api/ai/remove-object → Remove specific objects from images
+
+📄 Resume Review
+
+/api/ai/resume-review → Upload a resume PDF → receive structured feedback
+
+👤 User Routes
+
+Clerk-authenticated routes for user management
+
+🧪 Example Request
+curl -X POST https://your-vercel-domain.vercel.app/api/ai/generate-article \
+  -H "Content-Type: application/json" \
+  -d '{
+    "prompt": "Write about the future of AI in healthcare",
+    "length": 500
+  }'
+
+
+Response:
+
+{
+  "success": true,
+  "content": "AI is transforming healthcare by..."
+}
+
+🛠️ Troubleshooting
+
+500: INTERNAL_SERVER_ERROR → Likely a missing/misconfigured env var.
+
+ERR_PACKAGE_PATH_NOT_EXPORTED (Clerk) → Ensure Vercel bundles your app (bundle:false should NOT be set).
+
+TS2351 OpenAI constructable error → Use import OpenAI from "openai"; with esModuleInterop: true.
+
+📜 License
+
+MIT © 2025 EuronAI
