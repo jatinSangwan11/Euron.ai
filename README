@@ -8,7 +8,7 @@ The app integrates **Google Gemini**, **ClipDrop**, **Clerk (Auth)**, **Neon (Po
 ---
 
 ## 📂 Monorepo Structure
-
+ 
 ```
 Euron.ai/
 ├── client/              # React.js frontend
