@@ -72,7 +72,7 @@ const Community = () => {
     }
   }, [user]);
 
-  return (
+  return !loading ? (
     <div className="flex-1 h-full flex flex-col gap-4 p-6">
       <h1 className="text-2xl font-semibold tracking-tight">Creations</h1>
 
@@ -143,6 +143,11 @@ const Community = () => {
           </div>
         )}
       </div>
+    </div>
+  ): (
+    <div className="flex items-center justify-center h-full">
+      <span className="w-10 h-10 rounded-full border-3 border-primary border-t-transparent animate-spin">
+      </span>
     </div>
   );
 };
